@@ -1,0 +1,25 @@
+{
+  "name": "colormind",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.client.json && tsc -p tsconfig.worker.json",
+    "db:migrate": "wrangler d1 migrations apply colormind --local",
+    "deploy": "vite build && wrangler d1 migrations apply colormind --remote && wrangler deploy"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.60.1",
+    "@cloudflare/workers-types": "^5.20260925.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2",
+    "wrangler": "^4.140.0"
+  }
+}

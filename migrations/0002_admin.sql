@@ -1,0 +1,4 @@
+ALTER TABLE colors ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE hints ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE questions ADD COLUMN active INTEGER NOT NULL DEFAULT 1;
+CREATE INDEX guesses_color_time ON guesses(color_id, created_at);
