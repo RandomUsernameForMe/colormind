@@ -1,13 +1,26 @@
-import { oklchToHex, type Oklch } from "../shared/color";
+import { hexToRgb, oklchToHex, type Oklch } from "../shared/color";
 
 const L_MIN = 0.15;
 const L_MAX = 0.97;
 const C_MAX = 0.32;
+const FIELD_W = 72;
+const FIELD_H = 48;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const div = (cls: string) => Object.assign(document.createElement("div"), { className: cls });
 const gradient = (dir: string, stops: string[]) => `linear-gradient(${dir}, ${stops.join(", ")})`;
 const range = (n: number, f: (t: number) => string) => Array.from({ length: n + 1 }, (_, i) => f(i / n));
+
+/** Paints hue × lightness at chroma `c` into a small canvas; CSS stretches it smoothly over the stage. */
+const paintField = (ctx: CanvasRenderingContext2D, hue: HueRange, c: number) => {
+  const img = ctx.createImageData(FIELD_W, FIELD_H);
+  for (let y = 0; y < FIELD_H; y++)
+    for (let x = 0; x < FIELD_W; x++) {
+      const hex = oklchToHex({ l: L_MAX - (y / (FIELD_H - 1)) * (L_MAX - L_MIN), c, h: hue.from + (x / (FIELD_W - 1)) * hue.width });
+      img.data.set([...hexToRgb(hex).map((v) => v * 255), 255], (y * FIELD_W + x) * 4);
+    }
+  ctx.putImageData(img, 0, 0);
+};
 
 export type Picker = { hex: () => string; destroy: () => void };
 export type HueRange = { from: number; width: number };
@@ -17,18 +30,18 @@ export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement, hue: H
   const full = hue.width >= 360;
   let col: Oklch = { l: 0.62, c: 0.12, h: hue.from + Math.random() * hue.width };
   const cross = div("cross");
-  const hueStrip = div("strip strip-h");
-  const lightStrip = div("strip strip-v");
-  stage.append(cross, hueStrip, lightStrip);
+  const field = Object.assign(document.createElement("canvas"), { className: "field", width: FIELD_W, height: FIELD_H });
+  const ctx = field.getContext("2d")!;
+  let paintedC = -1;
+  stage.append(field, cross);
   stage.classList.remove("idle");
   Object.assign(chroma, { min: "0", max: String(C_MAX), step: "0.002", value: String(col.c) });
 
   const render = () => {
-    stage.style.backgroundColor = oklchToHex(col);
+    if (col.c !== paintedC) paintField(ctx, hue, (paintedC = col.c));
+    cross.style.backgroundColor = oklchToHex(col);
     cross.style.left = `${((col.h - hue.from) / hue.width) * 100}%`;
     cross.style.top = `${((L_MAX - col.l) / (L_MAX - L_MIN)) * 100}%`;
-    hueStrip.style.background = gradient("to right", range(12, (t) => oklchToHex({ ...col, h: hue.from + t * hue.width })));
-    lightStrip.style.background = gradient("to bottom", range(8, (t) => oklchToHex({ ...col, l: L_MAX - t * (L_MAX - L_MIN) })));
     chroma.style.background = gradient("to right", range(8, (t) => oklchToHex({ ...col, c: t * C_MAX })));
   };
 
@@ -85,8 +98,7 @@ export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement, hue: H
       stage.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKey);
       cross.remove();
-      hueStrip.remove();
-      lightStrip.remove();
+      field.remove();
       stage.classList.add("idle");
     },
   };

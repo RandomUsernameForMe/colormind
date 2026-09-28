@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-09-28] - Pozadí pickeru ukazuje celou škálu
+- Místo jednolité barvy je na pozadí pole odstín × světlost při aktuální sytosti (canvas 72×48, roztažený přes plochu)
+- Vybraná barva je výplň kolečka kurzoru; okrajové proužky odstínu/světlosti odstraněny (pole je nahrazuje)
+
 ## [2026-09-28] - Tipování jen z výřezu spektra
 - Picker při hádání nabízí jen 90° odstínů (`HUE_WINDOW`); cíl leží v okně stabilně na 10–90 %, nikdy na kraji
 - `/api/next` vrací `hueFrom`; objevování barev dál přes celé spektrum
