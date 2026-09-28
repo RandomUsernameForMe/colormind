@@ -1,5 +1,5 @@
 import type { Answer, ColorDetail, ColorSummary, DiscoverOptions, GuessResponse, Hint, HistoryResponse, NextResponse, Question } from "../shared/api";
-import { FREE_PICK_LIMIT, HUE_WINDOW, MAX_HINT, MAX_NAME, MIN_DISTANCE } from "../shared/api";
+import { HUE_WINDOW, MAX_HINT, MAX_NAME, MIN_DISTANCE } from "../shared/api";
 import { clampChroma, hexDistance, hueWindowFrom, isHex, oklchToHex, scoreFromDelta } from "../shared/color";
 
 import { adminRoute } from "./admin";
@@ -171,9 +171,7 @@ const randomQuestions = async (db: D1Database) =>
   (await db.prepare("SELECT id, text FROM questions WHERE active = 1 ORDER BY RANDOM() LIMIT 3").all<Question>()).results;
 
 const discoverOptions = async (db: D1Database): Promise<DiscoverOptions> => {
-  const existing = await allHexes(db);
-  const free = existing.length < FREE_PICK_LIMIT;
-  return { free, options: free ? [] : pickOptions(existing, 3), questions: await randomQuestions(db) };
+  return { options: pickOptions(await allHexes(db), 3), questions: await randomQuestions(db) };
 };
 
 const discover = async (db: D1Database, body: Body) => {

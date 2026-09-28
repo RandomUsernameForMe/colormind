@@ -16,7 +16,7 @@ export type GuessResponse = {
   hints: Hint[];
 };
 
-export type DiscoverOptions = { free: boolean; options: string[]; questions: Question[] };
+export type DiscoverOptions = { options: string[]; questions: Question[] };
 
 export type Answer = { questionId: number; text: string };
 
@@ -41,7 +41,6 @@ export type HistoryResponse = {
 
 export type ColorDetail = ColorSummary & { hints: Hint[]; question: Question | null };
 
-export const FREE_PICK_LIMIT = 5;
 export const MIN_DISTANCE = 10;
 export const MAX_HINT = 80;
 export const MAX_NAME = 40;

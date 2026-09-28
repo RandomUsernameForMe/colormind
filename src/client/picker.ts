@@ -26,8 +26,7 @@ export type Picker = { hex: () => string; destroy: () => void };
 export type HueRange = { from: number; width: number };
 
 /** Whole stage is the picker: x = hue (within `hue`, unwrapped), y = lightness, slider/wheel = chroma. */
-export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement, hue: HueRange = { from: 0, width: 360 }): Picker => {
-  const full = hue.width >= 360;
+export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement, hue: HueRange): Picker => {
   let col: Oklch = { l: 0.62, c: 0.12, h: hue.from + Math.random() * hue.width };
   const cross = div("cross");
   const field = Object.assign(document.createElement("canvas"), { className: "field", width: FIELD_W, height: FIELD_H });
@@ -49,14 +48,14 @@ export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement, hue: H
     col = { ...col, ...patch };
     col.c = Math.min(C_MAX, Math.max(0, col.c));
     col.l = Math.min(L_MAX, Math.max(L_MIN, col.l));
-    col.h = full ? (col.h + 360) % 360 : Math.min(hue.from + hue.width, Math.max(hue.from, col.h));
+    col.h = Math.min(hue.from + hue.width, Math.max(hue.from, col.h));
     chroma.value = String(col.c);
     render();
   };
 
   const fromPointer = (e: PointerEvent) => {
     const r = stage.getBoundingClientRect();
-    update({ h: hue.from + clamp01((e.clientX - r.left) / r.width) * (full ? 359.9 : hue.width), l: L_MAX - clamp01((e.clientY - r.top) / r.height) * (L_MAX - L_MIN) });
+    update({ h: hue.from + clamp01((e.clientX - r.left) / r.width) * hue.width, l: L_MAX - clamp01((e.clientY - r.top) / r.height) * (L_MAX - L_MIN) });
   };
   const onDown = (e: PointerEvent) => {
     stage.setPointerCapture(e.pointerId);

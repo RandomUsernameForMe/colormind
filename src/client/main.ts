@@ -274,20 +274,6 @@ const showDone = () => {
 
 const discover = async () => {
   const opts = await api.discoverOptions();
-  if (opts.free) {
-    screen(
-      `
-      <div class="bar card">
-        <p class="how">Pool se teprve zakládá — namíchej barvu sám. Vodorovně odstín, svisle světlost.</p>
-        <label class="chroma">Sytost <input type="range" id="chroma" /></label>
-        <button class="primary" id="pick">Tahle!</button>
-      </div>`,
-      "free",
-    );
-    picker = mountPicker(stage, $<HTMLInputElement>("#chroma"));
-    $("#pick").onclick = () => showNaming(picker!.hex(), opts.questions);
-    return;
-  }
   if (opts.options.length === 0) throw new Error("Nenašla se žádná dost odlišná barva. Pool je plný!");
   screen(`
     <div class="options">${opts.options.map((hex) => `<button class="option" style="background:${hex}" data-hex="${hex}" aria-label="Vybrat barvu"></button>`).join("")}</div>
