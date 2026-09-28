@@ -1,6 +1,6 @@
 import type { Answer, ColorDetail, ColorSummary, DiscoverOptions, GuessResponse, Hint, HistoryResponse, NextResponse, Question } from "../shared/api";
-import { FREE_PICK_LIMIT, MAX_HINT, MAX_NAME, MIN_DISTANCE } from "../shared/api";
-import { clampChroma, hexDistance, isHex, oklchToHex, scoreFromDelta } from "../shared/color";
+import { FREE_PICK_LIMIT, HUE_WINDOW, MAX_HINT, MAX_NAME, MIN_DISTANCE } from "../shared/api";
+import { clampChroma, hexDistance, hueWindowFrom, isHex, oklchToHex, scoreFromDelta } from "../shared/color";
 
 import { adminRoute } from "./admin";
 import { fail, HttpError, idOf, json, playerOf, textOf, type Body } from "./http";
@@ -29,14 +29,19 @@ const UNPLAYED = `FROM colors c
 const next = async (db: D1Database, player: string, colorId: number | null): Promise<NextResponse> => {
   const row = await db
     .prepare(
-      `SELECT c.id ${UNPLAYED} AND (?2 IS NULL OR c.id = ?2)
+      `SELECT c.id, c.hex ${UNPLAYED} AND (?2 IS NULL OR c.id = ?2)
        ORDER BY (SELECT COUNT(*) FROM hints h WHERE h.color_id = c.id AND h.hidden = 0) DESC, RANDOM() LIMIT 1`,
     )
     .bind(player, colorId)
-    .first<{ id: number }>();
+    .first<{ id: number; hex: string }>();
   if (!row && colorId) fail(404, "Tuhle barvu už hrát nemůžeš");
   if (!row) return { done: true };
-  return { done: false, colorId: row.id, hints: (await hintsFor(db, row.id, player)).map((h) => ({ ...h, mine: false })) };
+  return {
+    done: false,
+    colorId: row.id,
+    hints: (await hintsFor(db, row.id, player)).map((h) => ({ ...h, mine: false })),
+    hueFrom: hueWindowFrom(row.hex, row.id, HUE_WINDOW),
+  };
 };
 
 const leastAnsweredQuestion = (db: D1Database, colorId: number) =>

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-09-28] - Tipování jen z výřezu spektra
+- Picker při hádání nabízí jen 90° odstínů (`HUE_WINDOW`); cíl leží v okně stabilně na 10–90 %, nikdy na kraji
+- `/api/next` vrací `hueFrom`; objevování barev dál přes celé spektrum
+
 ## [2026-09-25] - MVP hry Colormind
 - Hádání barvy podle nápověd ostatních hráčů, plynulý OKLCH picker přes celou obrazovku
 - Skóre podle CIEDE2000 (0–100), odhalení diagonálním řezem, hodnocení nápověd 👍

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deltaE2000, hexToLab, oklchToHex, scoreFromDelta } from "./color";
+import { deltaE2000, hexToLab, hexToOklch, hueWindowFrom, oklchToHex, scoreFromDelta } from "./color";
 
 describe("deltaE2000 (Sharma et al. reference pairs)", () => {
   const pairs: [[number, number, number], [number, number, number], number][] = [
@@ -32,4 +32,25 @@ it("score", () => {
   expect(scoreFromDelta(0)).toBe(100);
   expect(scoreFromDelta(10)).toBe(75);
   expect(scoreFromDelta(50)).toBe(0);
+});
+
+describe("hue window", () => {
+  it("hexToOklch round-trips", () => {
+    const col = hexToOklch("#ff0000");
+    expect(col.l).toBeCloseTo(0.628, 3);
+    expect(col.c).toBeCloseTo(0.2577, 3);
+    expect(col.h).toBeCloseTo(29.23, 1);
+  });
+  it.each([1, 2, 7, 42, 1000])("colour %i lies inside its window, away from edges", (id) => {
+    for (const hex of ["#ff0000", "#00ff80", "#3050c0", "#808080"]) {
+      const h = hexToOklch(hex).h;
+      const offset = (((h - hueWindowFrom(hex, id, 90)) % 360) + 360) % 360;
+      expect(offset).toBeGreaterThanOrEqual(9);
+      expect(offset).toBeLessThanOrEqual(81);
+    }
+  });
+  it("window is not always centred", () => {
+    const offsets = [1, 2, 3, 4, 5].map((id) => (hexToOklch("#ff0000").h - hueWindowFrom("#ff0000", id, 90) + 360) % 360);
+    expect(new Set(offsets.map(Math.round)).size).toBeGreaterThan(1);
+  });
 });

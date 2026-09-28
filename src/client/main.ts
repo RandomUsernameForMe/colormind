@@ -1,5 +1,5 @@
 import type { Answer, ColorDetail, ColorSummary, GuessResponse, Hint, HistoryResponse, Question } from "../shared/api";
-import { MAX_HINT, MAX_NAME } from "../shared/api";
+import { HUE_WINDOW, MAX_HINT, MAX_NAME } from "../shared/api";
 import { verdict } from "../shared/color";
 import { api } from "./api";
 import { mountPicker, type Picker } from "./picker";
@@ -151,7 +151,7 @@ const play = async (colorId?: number) => {
     </div>`,
     "free",
   );
-  picker = mountPicker(stage, $<HTMLInputElement>("#chroma"));
+  picker = mountPicker(stage, $<HTMLInputElement>("#chroma"), { from: next.hueFrom, width: HUE_WINDOW });
   $("#guess").onclick = async () => {
     const hex = picker!.hex();
     try {

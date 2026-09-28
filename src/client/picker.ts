@@ -10,10 +10,12 @@ const gradient = (dir: string, stops: string[]) => `linear-gradient(${dir}, ${st
 const range = (n: number, f: (t: number) => string) => Array.from({ length: n + 1 }, (_, i) => f(i / n));
 
 export type Picker = { hex: () => string; destroy: () => void };
+export type HueRange = { from: number; width: number };
 
-/** Whole stage is the picker: x = hue, y = lightness, slider/wheel = chroma. */
-export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement): Picker => {
-  let col: Oklch = { l: 0.62, c: 0.12, h: Math.random() * 360 };
+/** Whole stage is the picker: x = hue (within `hue`, unwrapped), y = lightness, slider/wheel = chroma. */
+export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement, hue: HueRange = { from: 0, width: 360 }): Picker => {
+  const full = hue.width >= 360;
+  let col: Oklch = { l: 0.62, c: 0.12, h: hue.from + Math.random() * hue.width };
   const cross = div("cross");
   const hueStrip = div("strip strip-h");
   const lightStrip = div("strip strip-v");
@@ -23,9 +25,9 @@ export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement): Picke
 
   const render = () => {
     stage.style.backgroundColor = oklchToHex(col);
-    cross.style.left = `${(col.h / 360) * 100}%`;
+    cross.style.left = `${((col.h - hue.from) / hue.width) * 100}%`;
     cross.style.top = `${((L_MAX - col.l) / (L_MAX - L_MIN)) * 100}%`;
-    hueStrip.style.background = gradient("to right", range(12, (t) => oklchToHex({ ...col, h: t * 360 })));
+    hueStrip.style.background = gradient("to right", range(12, (t) => oklchToHex({ ...col, h: hue.from + t * hue.width })));
     lightStrip.style.background = gradient("to bottom", range(8, (t) => oklchToHex({ ...col, l: L_MAX - t * (L_MAX - L_MIN) })));
     chroma.style.background = gradient("to right", range(8, (t) => oklchToHex({ ...col, c: t * C_MAX })));
   };
@@ -34,14 +36,14 @@ export const mountPicker = (stage: HTMLElement, chroma: HTMLInputElement): Picke
     col = { ...col, ...patch };
     col.c = Math.min(C_MAX, Math.max(0, col.c));
     col.l = Math.min(L_MAX, Math.max(L_MIN, col.l));
-    col.h = (col.h + 360) % 360;
+    col.h = full ? (col.h + 360) % 360 : Math.min(hue.from + hue.width, Math.max(hue.from, col.h));
     chroma.value = String(col.c);
     render();
   };
 
   const fromPointer = (e: PointerEvent) => {
     const r = stage.getBoundingClientRect();
-    update({ h: clamp01((e.clientX - r.left) / r.width) * 359.9, l: L_MAX - clamp01((e.clientY - r.top) / r.height) * (L_MAX - L_MIN) });
+    update({ h: hue.from + clamp01((e.clientX - r.left) / r.width) * (full ? 359.9 : hue.width), l: L_MAX - clamp01((e.clientY - r.top) / r.height) * (L_MAX - L_MIN) });
   };
   const onDown = (e: PointerEvent) => {
     stage.setPointerCapture(e.pointerId);

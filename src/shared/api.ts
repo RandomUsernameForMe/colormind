@@ -2,7 +2,8 @@
 export type Hint = { id: number; questionId: number; question: string; text: string; likes: number; mine: boolean; own: boolean };
 export type Question = { id: number; text: string };
 
-export type NextResponse = { done: true } | { done: false; colorId: number; hints: Hint[] };
+/** hueFrom = start of the HUE_WINDOW-wide hue range the guesser picks from */
+export type NextResponse = { done: true } | { done: false; colorId: number; hints: Hint[]; hueFrom: number };
 
 export type GuessResponse = {
   hex: string;
@@ -44,3 +45,4 @@ export const FREE_PICK_LIMIT = 5;
 export const MIN_DISTANCE = 10;
 export const MAX_HINT = 80;
 export const MAX_NAME = 40;
+export const HUE_WINDOW = 90;

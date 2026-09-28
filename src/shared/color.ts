@@ -46,6 +46,24 @@ export const clampChroma = (col: Oklch): Oklch => {
 
 export const oklchToHex = (col: Oklch): string => rgbToHex(oklchToLinear(clampChroma(col)).map(fromLinear) as Rgb);
 
+// linear sRGB → OKLab, matrices by Björn Ottosson
+export const hexToOklch = (hex: string): Oklch => {
+  const [r, g, b] = hexToRgb(hex).map(toLinear);
+  const l_ = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m_ = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s_ = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_;
+  const A = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_;
+  const B = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_;
+  return { l: L, c: Math.hypot(A, B), h: (deg(Math.atan2(B, A)) + 360) % 360 };
+};
+
+/** Start of the hue range the guesser may pick from. Stable per colour; target sits at 10–90 % of the width, never at an edge. */
+export const hueWindowFrom = (hex: string, colorId: number, width: number) => {
+  const pos = 0.1 + 0.8 * ((colorId * 0.6180339887) % 1);
+  return (hexToOklch(hex).h - pos * width + 360) % 360;
+};
+
 export const hexToLab = (hex: string): Lab => {
   const [r, g, b] = hexToRgb(hex).map(toLinear);
   const x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047;
