@@ -1,5 +1,7 @@
 # Changelog
 
+## [2026-10-11] - README: popis projektu, stack a spuštění (EN + CZ)
+
 ## [2026-09-28] - Objevování jen výběrem z návrhů
 - Zrušeno ruční míchání prvních 5 barev (`FREE_PICK_LIMIT`); objevuje se vždy výběrem ze 3 vygenerovaných barev
 - Picker už nepodporuje celé spektrum, jen okno odstínů při hádání
