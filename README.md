@@ -1,5 +1,7 @@
 # Colormind
 
+![Screenshot](docs/screenshot.png)
+
 A multiplayer color-guessing game. Players describe colors with short hints; you read someone else's hints and try to hit the exact shade on a full-screen picker.
 
 **Play:** <https://colormind.guth.workers.dev>

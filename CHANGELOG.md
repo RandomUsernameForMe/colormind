@@ -1,5 +1,6 @@
 # Changelog
 
+## [2026-10-12] - README: screenshot aplikace
 ## [2026-10-11] - README: popis projektu, stack a spuštění (EN + CZ)
 
 ## [2026-09-28] - Objevování jen výběrem z návrhů
